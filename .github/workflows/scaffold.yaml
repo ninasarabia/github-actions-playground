@@ -1,21 +1,30 @@
-name: Scaffold
+name: Scaffold + deploy
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  push:
     branches:
-    - "develop"
+      - main
 
 # Terraform jobs are queued per branch to prevent
 # concurrent actions on the same Terraform workspace
 concurrency: 
   group: ci-${{ github.ref }}
 
-
 jobs:
   namespace:
     if: github.event.pull_request.draft == false
-    name: Scaffold things
+    name: Scaffold
     runs-on: ubuntu-latest
+    environment: 
+      name: production
+    steps:
+    - uses: actions/checkout@v3
+  deployment:
+    name: Deploy
+    needs: [namespace]
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: https://${{ github.ref }}.test.com
     steps:
     - uses: actions/checkout@v3
   

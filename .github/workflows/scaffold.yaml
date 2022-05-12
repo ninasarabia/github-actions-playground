@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: production
-      url: https://${{ github.event.pull_request.head.ref }}.test.com
+      url: https://${{ github.event.pull_request.head.ref }}.website.com
     steps:
     - uses: actions/checkout@v3
   

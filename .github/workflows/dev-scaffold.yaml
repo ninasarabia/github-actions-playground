@@ -15,20 +15,20 @@ env:
 
 jobs:
   get-environment-name:
-  name: "Extract environment name"
-  runs-on: ubuntu-latest
-  steps:
-    - name: Get branch name
-      id: branch-name
-      uses: tj-actions/branch-names@v5.2
-    - name: Current branch name
-      run: |
-        echo "Running on branch: ${{ steps.branch-name.outputs.current_branch }}"
-    - name: Set environment to dev
-      run: |
-        echo "ENVIRONMENT=development" >> $GITHUB_ENV
-      if: steps.branch-name.outputs.current_branch == "develop"
-    - name: Set environment to staging
-      run: |
-        echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-      if: steps.branch-name.outputs.current_branch == "master"
+    name: "Extract environment name"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.2
+      - name: Current branch name
+        run: |
+          echo "Running on branch: ${{ steps.branch-name.outputs.current_branch }}"
+      - name: Set environment to dev
+        run: |
+          echo "ENVIRONMENT=development" >> $GITHUB_ENV
+        if: steps.branch-name.outputs.current_branch == "develop"
+      - name: Set environment to staging
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+        if: steps.branch-name.outputs.current_branch == "master"

@@ -1,0 +1,76 @@
+name: Build and deploy dev
+on:
+  push:
+    branches:
+      - "develop"
+      - "master"
+
+# Terraform jobs are queued per branch to prevent
+# concurrent actions on the same Terraform workspace
+concurrency: 
+  group: ci-${{ github.ref }}
+
+env:
+  HEAD_COMMIT: ${{ github.sha }}
+
+jobs:
+  set-environment-meta:
+    name: "Set environment meta"
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ env.ENVIRONMENT }}
+      namespace: ${{ env.NAMESPACE }}
+      gcp_project: ${{ env.GCP_PROJECT }}
+    steps:
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.2
+      - name: Current branch name
+        run: |
+          echo "Running on branch: ${{ steps.branch-name.outputs.current_branch }}"
+      - name: Set environment to dev
+        run: |
+          echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          echo "NAMESPACE=dev" >> $GITHUB_ENV
+          echo "GCP_PROJECT=development-254117" >> $GITHUB_ENV
+        if: steps.branch-name.outputs.current_branch == 'develop'
+      - name: Set environment to staging
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "NAMESPACE=staging" >> $GITHUB_ENV
+          echo "GCP_PROJECT=staging-238418" >> $GITHUB_ENV
+        if: steps.branch-name.outputs.current_branch == 'master'
+
+  publish-docker-image-and-helm:
+    name: Publish application docker image and helm chart
+    environment: ${{ needs.set-environment-meta.outputs.environment }}
+    needs: [set-environment-meta]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build-and-publish-artifacts
+      run: |
+        echo "Published things for ${{ needs.set-environment-meta.outputs.environment }}."
+
+  approve-release:
+    name: Approve deployment
+    if: needs.set-environment-meta.outputs.environment == 'staging'
+    environment: release
+    needs: [set-environment-meta, publish-docker-image-and-helm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Approving release to production
+      run: |
+        echo "Approving release to production..."
+
+  release-docker-image-and-helm:
+    name: Release production artifacts
+    environment: production
+    needs: [approve-release]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Releasing artifacts
+      run: |
+        echo "Releasing artifacts"

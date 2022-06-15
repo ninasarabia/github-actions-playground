@@ -48,7 +48,7 @@ jobs:
       run: |
         echo "Published things for ${{ needs.set-environment-meta.outputs.environment }}."
 
-  test-environment:
+  deploy-environment:
     name: Test environment
     environment: ${{ needs.set-environment-meta.outputs.environment }}
     concurrency: ${{ needs.set-environment-meta.outputs.environment }}
@@ -58,10 +58,22 @@ jobs:
     - uses: actions/checkout@v3
     - name: build-and-publish-artifacts
       run: |
+        echo "Deploying ${{ needs.set-environment-meta.outputs.environment }}."
+
+  test-environment:
+    name: Test environment
+    environment: ${{ needs.set-environment-meta.outputs.environment }}
+    concurrency: ${{ needs.set-environment-meta.outputs.environment }}
+    needs: [deploy-environment]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build-and-publish-artifacts
+      run: |
         echo "Testing ${{ needs.set-environment-meta.outputs.environment }}."
 
   approve-release:
-    name: Approve deployment
+    name: (If staging) Approve deployment
     if: needs.set-environment-meta.outputs.environment == 'staging'
     environment: release
     concurrency: staging
@@ -74,7 +86,7 @@ jobs:
         echo "Approving release to production..."
 
   release-docker-image-and-helm:
-    name: Release production artifacts
+    name: (If staging) Release production artifacts
     environment: production
     concurrency: production
     needs: [approve-release]
@@ -86,7 +98,7 @@ jobs:
         echo "Releasing artifacts"
 
   deploy-production:
-    name: Deploy to production
+    name: (If staging) Deploy to production
     environment: production
     concurrency: production
     needs: [release-docker-image-and-helm]
@@ -98,7 +110,7 @@ jobs:
         echo "Deploy to production"
 
   test-production:
-    name: Test production
+    name: (If staging) Test production
     environment: production
     concurrency: production
     needs: [deploy-production]

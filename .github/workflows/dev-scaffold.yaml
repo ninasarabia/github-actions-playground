@@ -14,8 +14,8 @@ env:
   HEAD_COMMIT: ${{ github.sha }}
 
 jobs:
-  get-environment-name:
-    name: "Extract environment name"
+  set-environment-meta:
+    name: "Set environment meta"
     runs-on: ubuntu-latest
     steps:
       - name: Get branch name
@@ -27,8 +27,33 @@ jobs:
       - name: Set environment to dev
         run: |
           echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          echo "NAMESPACE=dev" >> $GITHUB_ENV
+          echo "GCP_PROJECT=development-254117" >> $GITHUB_ENV
         if: steps.branch-name.outputs.current_branch == 'develop'
       - name: Set environment to staging
         run: |
           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "NAMESPACE=staging" >> $GITHUB_ENV
+          echo "GCP_PROJECT=staging-238418" >> $GITHUB_ENV
         if: steps.branch-name.outputs.current_branch == 'master'
+
+  publish-docker-image-and-helm:
+    name: Publish application docker image and helm chart
+    environment: ${{ env.ENVIRONMENT }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build-and-publish-artifacts
+      run: |
+        echo "Published things for ${{ env.ENVIRONMENT }}."
+
+  approve:
+    name: Approve deployment
+    environment: release
+    needs: [publish-docker-image-and-helm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Releasing to production
+      run: |
+        echo "Triggering release to production"

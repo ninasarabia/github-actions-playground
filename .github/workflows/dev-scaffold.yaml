@@ -54,6 +54,7 @@ jobs:
 
   approve-release:
     name: Approve deployment
+    if: needs.set-environment-meta.outputs.environment == 'staging'
     environment: release
     needs: [set-environment-meta, publish-docker-image-and-helm]
     runs-on: ubuntu-latest
@@ -64,7 +65,7 @@ jobs:
         echo "Approving release to production..."
 
   release-docker-image-and-helm:
-    name: Approve deployment
+    name: Release production artifacts
     environment: production
     needs: [approve-release]
     runs-on: ubuntu-latest

@@ -17,6 +17,8 @@ jobs:
   set-environment-meta:
     name: "Set environment meta"
     runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.environment-output.outputs.value }}
     steps:
       - name: Get branch name
         id: branch-name
@@ -36,10 +38,14 @@ jobs:
           echo "NAMESPACE=staging" >> $GITHUB_ENV
           echo "GCP_PROJECT=staging-238418" >> $GITHUB_ENV
         if: steps.branch-name.outputs.current_branch == 'master'
+      - name: Output environment
+        id: environment-output
+        run: |
+          echo "::set-output name=value::${{ env.ENVIRONMENT }}"
 
   publish-docker-image-and-helm:
     name: Publish application docker image and helm chart
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ needs.set-environment-meta.outputs.environment }}
     needs: [set-environment-meta]
     runs-on: ubuntu-latest
     steps:

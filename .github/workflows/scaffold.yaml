@@ -48,12 +48,24 @@ jobs:
       run: |
         echo "Published things for ${{ needs.set-environment-meta.outputs.environment }}."
 
+  test-environment:
+    name: Test environment
+    environment: ${{ needs.set-environment-meta.outputs.environment }}
+    concurrency: ${{ needs.set-environment-meta.outputs.environment }}
+    needs: [publish-docker-image-and-helm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build-and-publish-artifacts
+      run: |
+        echo "Testing ${{ needs.set-environment-meta.outputs.environment }}."
+
   approve-release:
     name: Approve deployment
     if: needs.set-environment-meta.outputs.environment == 'staging'
     environment: release
     concurrency: staging
-    needs: [set-environment-meta, publish-docker-image-and-helm]
+    needs: [set-environment-meta, test-environment]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

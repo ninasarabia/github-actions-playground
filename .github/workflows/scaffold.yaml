@@ -1,4 +1,4 @@
-name: Build and deploy environment
+name: Build and deploy
 on:
   push:
     branches:
@@ -52,7 +52,7 @@ jobs:
     name: Test environment
     environment: ${{ needs.set-environment-meta.outputs.environment }}
     concurrency: ${{ needs.set-environment-meta.outputs.environment }}
-    needs: [publish-docker-image-and-helm]
+    needs: [set-environment-meta, publish-docker-image-and-helm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
     name: Test environment
     environment: ${{ needs.set-environment-meta.outputs.environment }}
     concurrency: ${{ needs.set-environment-meta.outputs.environment }}
-    needs: [deploy-environment]
+    needs: [set-environment-meta, deploy-environment]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

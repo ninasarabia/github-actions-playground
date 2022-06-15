@@ -74,3 +74,25 @@ jobs:
     - name: Releasing artifacts
       run: |
         echo "Releasing artifacts"
+
+  deploy:
+    name: Deploy to production
+    environment: production
+    needs: [release-docker-image-and-helm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Production deploy
+      run: |
+        echo "Deploy to production"
+
+  test-production:
+    name: Test production
+    environment: production
+    needs: [release-docker-image-and-helm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test production
+      run: |
+        echo "Test production"

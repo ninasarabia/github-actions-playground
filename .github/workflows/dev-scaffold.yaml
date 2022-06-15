@@ -27,8 +27,8 @@ jobs:
       - name: Set environment to dev
         run: |
           echo "ENVIRONMENT=development" >> $GITHUB_ENV
-        if: steps.branch-name.outputs.current_branch == "develop"
+        if: steps.branch-name.outputs.current_branch == 'develop'
       - name: Set environment to staging
         run: |
           echo "ENVIRONMENT=staging" >> $GITHUB_ENV
-        if: steps.branch-name.outputs.current_branch == "master"
+        if: steps.branch-name.outputs.current_branch == 'master'

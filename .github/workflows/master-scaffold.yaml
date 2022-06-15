@@ -1,9 +1,13 @@
-name: Build and deploy dev
+name: Build and deploy master
 on:
   push:
     branches:
-      - "develop"
       - "master"
+
+# Terraform jobs are queued per branch to prevent
+# concurrent actions on the same Terraform workspace
+concurrency: 
+  group: ci-${{ github.ref }}
 
 env:
   HEAD_COMMIT: ${{ github.sha }}
@@ -39,7 +43,6 @@ jobs:
   publish-docker-image-and-helm:
     name: Publish application docker image and helm chart
     environment: ${{ needs.set-environment-meta.outputs.environment }}
-    concurrency: ${{ needs.set-environment-meta.outputs.environment }}
     needs: [set-environment-meta]
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +55,6 @@ jobs:
     name: Approve deployment
     if: needs.set-environment-meta.outputs.environment == 'staging'
     environment: release
-    concurrency: staging
     needs: [set-environment-meta, publish-docker-image-and-helm]
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +66,6 @@ jobs:
   release-docker-image-and-helm:
     name: Release production artifacts
     environment: production
-    concurrency: production
     needs: [approve-release]
     runs-on: ubuntu-latest
     steps:
@@ -76,7 +77,6 @@ jobs:
   deploy-production:
     name: Deploy to production
     environment: production
-    concurrency: production
     needs: [release-docker-image-and-helm]
     runs-on: ubuntu-latest
     steps:
@@ -88,7 +88,6 @@ jobs:
   test-production:
     name: Test production
     environment: production
-    concurrency: production
     needs: [deploy-production]
     runs-on: ubuntu-latest
     steps:

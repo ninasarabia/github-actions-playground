@@ -40,6 +40,7 @@ jobs:
   publish-docker-image-and-helm:
     name: Publish application docker image and helm chart
     environment: ${{ env.ENVIRONMENT }}
+    needs: [set-environment-meta]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -50,7 +51,7 @@ jobs:
   approve:
     name: Approve deployment
     environment: release
-    needs: [publish-docker-image-and-helm]
+    needs: [set-environment-meta, publish-docker-image-and-helm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

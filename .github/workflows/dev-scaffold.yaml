@@ -52,13 +52,24 @@ jobs:
       run: |
         echo "Published things for ${{ needs.set-environment-meta.outputs.environment }}."
 
-  approve:
+  approve-release:
     name: Approve deployment
     environment: release
     needs: [set-environment-meta, publish-docker-image-and-helm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Releasing to production
+    - name: Approving release to production
       run: |
-        echo "Triggering release to production"
+        echo "Approving release to production..."
+
+  release-docker-image-and-helm:
+    name: Approve deployment
+    environment: production
+    needs: [approve-release]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Releasing artifacts
+      run: |
+        echo "Releasing artifacts"
